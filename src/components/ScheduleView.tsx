@@ -1,3 +1,4 @@
+import { useRecordContextMenu } from './useRecordContextMenu';
 import { useMemo, useState } from 'react';
 import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useStore, selectFiltered } from '../store';
@@ -22,8 +23,10 @@ function agendaDayLabel(dateStr: string): string {
 /** 单个日程块：左色条 + 时间 + 事件（周视图与后续清单共用） */
 function PlanChip({ record }: { record: RecordItem }) {
   const color = planColor(record.id);
-  return (
+  const context = useRecordContextMenu(record);
+  return (<>
     <div
+      {...context.handlers}
       className="plan-chip"
       style={{ borderLeftColor: color }}
       onClick={() => requestEditor({ recordId: record.id })}
@@ -35,7 +38,7 @@ function PlanChip({ record }: { record: RecordItem }) {
         {planTimeText(record)}
       </span>
       {record.title}
-    </div>
+    </div>{context.menu}</>
   );
 }
 

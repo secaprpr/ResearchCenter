@@ -3,35 +3,8 @@
 /*  风格：Anthropic 米色纸感 + 衬线标题 + 月之暗面摇滚音符装饰          */
 /* ------------------------------------------------------------------ */
 
-:root {
-  --paper: #f6f3ec;
-  --paper-deep: #efebe1;
-  --surface: #fffefb;
-  --ink: #1c1a16;
-  --ink-soft: #3d3a33;
-  --muted: #767164;
-  --faint: #a8a294;
-  --line: #e4ded0;
-  --line-soft: #eee9dc;
-  --accent: #c96442;
-  --accent-deep: #a9512f;
-  --accent-soft: #f5e3da;
-  --night: #17150f;
-  --night-2: #211e15;
-  --night-line: #36321f;
-  --cream: #f2edde;
-  --gold: #d9a441;
-  --green: #4a7c59;
-  --blue: #4a6a8c;
-  --red: #b34a3c;
-  --font-sans: 'Inter', -apple-system, 'SF Pro Text', 'PingFang SC', 'Hiragino Sans GB',
-    'Microsoft YaHei', 'Noto Sans SC', sans-serif;
-  --font-serif: 'Source Serif 4', 'Noto Serif SC', 'Source Han Serif SC', Georgia, 'Songti SC',
-    'SimSun', serif;
-  --radius: 10px;
-  --shadow: 0 1px 2px rgba(28, 26, 22, 0.05), 0 4px 16px rgba(28, 26, 22, 0.06);
-  --shadow-lg: 0 8px 40px rgba(28, 26, 22, 0.18);
-}
+@import './theme-tokens.css';
+
 
 * {
   box-sizing: border-box;
@@ -199,12 +172,57 @@ select {
   position: relative;
   overflow: hidden;
   user-select: none;
+  transition: width 180ms ease, padding 180ms ease;
+}
+
+.sidebar-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  min-height: 28px;
+  padding: 0 2px 0 12px;
+  margin-bottom: 8px;
+}
+
+.sidebar-heading {
+  color: #8f8a76;
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+}
+
+.sidebar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 6px;
+  color: #8f8a76;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.sidebar-toggle:hover {
+  background: rgba(217, 164, 65, 0.10);
+  color: var(--gold);
+}
+
+.sidebar-toggle:active {
+  background: rgba(217, 164, 65, 0.16);
+}
+
+.sidebar-toggle:focus-visible,
+.nav-item:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: -2px;
 }
 
 .nav {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  padding: 46px 0 8px;
+  padding: 0 0 8px;
   display: flex;
   flex-direction: column;
 }
@@ -256,6 +274,12 @@ select {
   background: rgba(242, 237, 222, 0.06);
   color: var(--cream);
 }
+.nav-item svg {
+  flex-shrink: 0;
+}
+.nav-label {
+  white-space: nowrap;
+}
 .nav-item.active {
   background: rgba(217, 164, 65, 0.14);
   color: var(--gold);
@@ -282,8 +306,57 @@ select {
 
 .sidebar-footer {
   border-top: 1px solid var(--night-line);
+  flex-shrink: 0;
   padding-top: 12px;
   position: relative;
+}
+
+.sidebar.sidebar-collapsed {
+  width: 72px;
+  padding-inline: 12px;
+}
+.sidebar-collapsed .sidebar-toolbar {
+  justify-content: center;
+  padding: 0;
+}
+.sidebar-collapsed .sidebar-toggle {
+  width: 36px;
+  height: 32px;
+  padding: 0;
+}
+.sidebar-collapsed .sidebar-heading {
+  display: none;
+}
+.sidebar-collapsed .nav-label,
+.sidebar-collapsed .nav-note,
+.sidebar-collapsed .count {
+  display: none;
+}
+.sidebar-collapsed .nav-item {
+  justify-content: center;
+  min-height: 40px;
+  padding: 12px 0;
+  gap: 0;
+}
+.sidebar-collapsed .nav-section {
+  font-size: 0;
+  padding: 0;
+  margin: 16px 8px 8px;
+  border-top: 1px solid var(--night-line);
+}
+.sidebar-collapsed .nav-section:first-child {
+  margin: 0;
+  border: 0;
+}
+.sidebar-collapsed .nav-other {
+  margin-top: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .sidebar-toggle {
+    transition: none;
+  }
 }
 
 /* ---------- 音符装饰（摇滚） ---------- */
@@ -441,13 +514,13 @@ select {
   margin: 6px 0 24px;
 }
 .page-title {
-  font-size: 30px;
-  margin: 0 0 6px;
-  line-height: 1.3;
+  font-size: var(--page-title-size);
+  margin: 0 0 var(--page-title-gap);
+  line-height: var(--page-title-leading);
 }
 .page-desc {
   color: var(--muted);
-  font-size: 13.5px;
+  font-size: var(--page-description-size);
   margin: 0;
 }
 
@@ -1440,6 +1513,22 @@ select {
 }
 
 /* ---------- 空状态 ---------- */
+
+.content.content-port { padding: 0; overflow: hidden; }
+.port-library-workspace { height: 100%; min-height: 0; }
+.port-library-workspace[hidden] { display: none; }
+.port-library-shell { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.port-library-shell > iframe { width: 100%; flex: 1; min-height: 0; border: 0; background: var(--paper); }
+.port-library-footer { display: flex; justify-content: flex-end; align-items: center; padding: 2px 20px; font-size: 10px; color: var(--muted); }
+.port-library-footer button { font-size: 11px; color: var(--muted); padding: 2px 8px; }
+
+/* Compact hosts keep the library usable without changing the desktop shell. */
+@media (max-width: 600px) {
+  .library-mode .sidebar { display: none; }
+  .library-mode .titlebar-brand { min-width: 0; }
+  .library-mode .titlebar-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .library-mode .port-library-footer { display: none; }
+}
 
 .empty {
   text-align: center;

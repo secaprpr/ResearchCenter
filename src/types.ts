@@ -1,3 +1,6 @@
+import type { TopicData } from './topics';
+import type { TaskCategory, TaskTemplate } from './research-tasks';
+import type { TodayData } from './today-data';
 export type Status = 'planned' | 'active' | 'paused' | 'done';
 export type Priority = 'none' | 'low' | 'medium' | 'high';
 
@@ -22,12 +25,16 @@ export interface RecordItem {
   priority: Priority;
   dueDate: string | null;
   done: boolean;
+  /** 待办的真实完成时间；旧记录可能没有该字段。 */
+  completedAt?: number | null;
   /** 日程专用：计划在哪一天（YYYY-MM-DD）与可选起止时间（HH:mm） */
   planDate: string | null;
   planStart: string | null;
   planEnd: string | null;
-  /** 科研项目专用：纵向 / 横向细分 */
+  /** 科研课题专用：保留原纵向 / 横向属性 */
   sub?: 'vertical' | 'horizontal' | null;
+  topic?: TopicData;
+  topicId?: string;
   createdAt: number;
   updatedAt: number;
   /** 手动排序权重（同类型内，越小越靠前；未设置时按更新时间倒序兜底） */
@@ -53,6 +60,9 @@ export interface Workspace {
 }
 
 export interface ExportPayload {
+  todayData?: Record<string, TodayData>;
+  taskCategories?: TaskCategory[];
+  taskTemplates?: TaskTemplate[];
   app: 'research-workbench';
   version: 1;
   exportedAt: string;

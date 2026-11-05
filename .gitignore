@@ -31,3 +31,7 @@ Thumbs.db
 .DS_Store
 .vscode/
 .idea/
+.local-profile/
+.taste-skill/
+/.design-preview/
+/research-vault/

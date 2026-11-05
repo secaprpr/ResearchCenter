@@ -1,0 +1,21 @@
+{
+  "manifest": {
+    "id": "obsidian-today",
+    "name": "Today Sidebar",
+    "version": "0.18.76",
+    "minAppVersion": "1.5.0",
+    "description": "A lightweight task system for Obsidian with WYSIWYG task documents, lists, boards, timeline, calendar and statistics.",
+    "author": "OpenAI",
+    "isDesktopOnly": false
+  },
+  "sha256": "11cdcec9b1e29c68b8687f8258538231e533cf175f5526fc82b4c6aa39062480",
+  "changes": [
+    "Adapted CommonJS Obsidian imports and default export to local ES modules.",
+    "Exported normalizeData for the native host.",
+    "Disabled automatic demonstration-data seeding; real task behavior is retained.",
+    "Replaced unsupported Electron window.prompt calls with awaited in-app text dialogs.",
+    "Unified folder/list/group/board task creation through the existing full inline composer, preserving lane defaults and continuous capture.",
+    "Added readable capture properties and inline descriptions, a completion-time history with list/date filters, and save-before-switch docked detail navigation based on direct TickTick desktop workflow review."
+  ],
+  "userDataCopied": false
+}

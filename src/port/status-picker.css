@@ -1,0 +1,23 @@
+.rw-status-pill[type=button], .rw-status-menu { font: var(--ui-font); font-synthesis: none; letter-spacing: normal; text-transform: none; -webkit-font-smoothing: antialiased; }
+.rw-status-pill { display: inline-flex; align-items: center; justify-content: flex-start; gap: 5px; height: 24px; max-width: 100%; padding: 0 10px; border: 0; border-radius: 999px; vertical-align: middle; cursor: pointer; white-space: nowrap; transition: background-color 120ms ease; }
+.rw-status-pill svg { flex: 0 0 13px; }
+.rw-status-pill .rw-state { color: inherit; background: transparent; font: inherit; white-space: nowrap; }
+/* Keep text out of a filtered compositing layer: hover only tints the surface,
+   preserving the same text colour and rasterisation as neighbouring labels. */
+.rw-status-pill:hover:not(:disabled) { background: color-mix(in srgb, var(--rw-status-fill) 90%, var(--rw-status-ink)); }
+.rw-status-pill:focus-visible, .rw-status-pill[aria-expanded=true] { outline: var(--ui-focus-ring); outline-offset: 2px; }
+.rw-status-pill:disabled { opacity: .65; cursor: wait; }
+.state-inbox:is(.rw-status-pill, .rw-status-menu-icon) { --rw-status-ink: #b76313; --rw-status-fill: #fcebd9; }
+.state-queued:is(.rw-status-pill, .rw-status-menu-icon) { --rw-status-ink: #a47413; --rw-status-fill: #fbf2dc; }
+.state-reading:is(.rw-status-pill, .rw-status-menu-icon) { --rw-status-ink: #2472d9; --rw-status-fill: #e7f0ff; }
+.state-read:is(.rw-status-pill, .rw-status-menu-icon) { --rw-status-ink: #12835b; --rw-status-fill: #e2f5eb; }
+.state-archived:is(.rw-status-pill, .rw-status-menu-icon) { --rw-status-ink: #697280; --rw-status-fill: #eceff3; }
+.rw-status-pill, .rw-status-menu-icon { color: var(--rw-status-ink); background: var(--rw-status-fill); }
+.rw-status-menu { position: fixed; z-index: 4600; width: 224px; max-width: calc(100vw - 16px); max-height: calc(100vh - 16px); box-sizing: border-box; overflow-y: auto; padding: 7px; border: 1px solid #dfe3e9; border-radius: var(--ui-menu-radius); background: #fff; box-shadow: 0 5px 12px #22314b14, 0 16px 36px #22314b14; color: #414953; }
+.rw-status-menu-heading { padding: 3px 8px 7px; color: #969eab; font-size: 12px; font-weight: 500; }
+.rw-status-menu > button { display: flex; align-items: center; gap: 9px; width: 100%; min-height: 36px; padding: 5px 7px; border: 0; border-radius: 6px; color: inherit; background: transparent; text-align: left; cursor: pointer; font: inherit; }
+.rw-status-menu > button[aria-selected=true] { background: #f2f6fc; }
+.rw-status-menu > button:hover, .rw-status-menu > button:focus-visible { background: #edf3fc; outline: none; }
+.rw-status-menu-icon { display: inline-flex; flex: 0 0 24px; height: 24px; align-items: center; justify-content: center; border-radius: 6px; }
+.rw-status-current { margin-left: auto; color: #488fff; }
+@media (prefers-reduced-motion: reduce) { .rw-status-pill { transition: none; } }

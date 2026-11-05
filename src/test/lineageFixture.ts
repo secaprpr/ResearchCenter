@@ -1,0 +1,11 @@
+import type { RecordItem } from '../types';
+import type { ResearchTask } from '../research-tasks';
+const emptyTopic = () => ({ question:'', hypothesis:'', conclusion:'', blocker:'', focus:'', nextStep:'', papers:[], ideas:[], experiments:[], assets:[], milestones:[], events:[] });
+export function lineageFixture(typeId = 'project'): RecordItem {
+  const task = (id: string, title: string, day: number, parentIds: string[] = [], extra: Partial<ResearchTask> = {}): ResearchTask => {
+    const time=Date.parse(`2026-10-${day}T10:05:00+08:00`);
+    return {id,title,description:'保留执行目的、输入和结果，供后续核查。',categoryIds:['data'],status:'completed',createdAt:time,updatedAt:time,recordedAt:time,source:'Codex',notes:'',events:[],assetIds:[],paperIds:[],links:[],comments:[],parentIds,...extra};
+  };
+  const tasks=[task('question','病理与分子信息能否改善跨中心预测？',21,[],{nodeType:'研究问题',nodeStyle:'milestone'}),task('download','下载 TCGA-BRCA，建立第一轮探索数据',22,['question'],{nodeType:'数据下载',categoryIds:['data','download'],events:[{id:'start',title:'开始下载',description:'',occurredAt:Date.parse('2026-10-22T10:05:00+08:00'),recordedAt:Date.parse('2026-10-23T09:05:00+08:00'),source:'Codex',evidence:'download.log',templateId:'',templateVersion:1,fields:[{id:'source',label:'下载来源',type:'url',value:'https://portal.gdc.cancer.gov/'},{id:'path',label:'保存位置',type:'path',value:'/data/tcga/brca'}]}]}),task('baseline','建立可复现的病理基线',24,['download'],{nodeType:'实验',categoryIds:['experiment','baseline']}),task('external','并行准备外部中心验证',24,['download'],{nodeType:'外部验证',branch:true}),task('ablation','核对增益来源与稳定性',26,['external'],{nodeType:'消融',categoryIds:['experiment','ablation']}),task('decision','阶段结论：保留多模态方案',27,['baseline','ablation'],{nodeType:'研究决定',nodeStyle:'milestone'}),task('release','冻结第一轮研究快照',28,['decision'],{nodeType:'研究快照',nodeStyle:'snapshot',version:'v0.1'}),task('maintenance','修正中心 B 样本映射，重跑受影响实验',29,['release'],{nodeType:'日常维护',status:'running',branch:true})];
+  return {id:'lineage-topic',typeId,workspaceId:'ws-default',title:'多模态病理分析',content:'',status:'active',starred:false,archived:false,fields:[],priority:'none',dueDate:null,done:false,planDate:null,planStart:null,planEnd:null,createdAt:tasks[0].createdAt,updatedAt:tasks.at(-1)!.updatedAt,topic:{...emptyTopic(),question:'研究病理与分子信息的联合建模及跨中心泛化。',tasks}};
+}

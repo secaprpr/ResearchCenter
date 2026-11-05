@@ -1,3 +1,4 @@
+import { useRecordContextMenu } from './useRecordContextMenu';
 import { useMemo, useState } from 'react';
 import { Plus, Star, Trash2, Calendar } from 'lucide-react';
 import { useStore, selectFiltered } from '../store';
@@ -30,8 +31,9 @@ function DueBadge({ dueDate }: { dueDate: string }) {
 
 function TodoItem({ record }: { record: RecordItem }) {
   const { toggleDone, toggleStar, deleteRecord } = useStore();
-  return (
-    <div className={clsx('card', 'todo-item', record.done && 'done')}>
+  const context = useRecordContextMenu(record);
+  return (<>
+    <div {...context.handlers} tabIndex={-1} className={clsx('card', 'todo-item', record.done && 'done')}>
       <button
         className="check"
         onClick={() => toggleDone(record.id)}
@@ -73,7 +75,7 @@ function TodoItem({ record }: { record: RecordItem }) {
           <Trash2 size={15} />
         </button>
       </div>
-    </div>
+    </div>{context.menu}</>
   );
 }
 

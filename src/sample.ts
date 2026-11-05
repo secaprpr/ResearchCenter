@@ -2,7 +2,7 @@ import type { RecordItem, TypeDef, Workspace } from './types';
 import { pickNote } from './types';
 
 export const BUILTIN_TYPES: TypeDef[] = [
-  { id: 'project', name: '科研项目', kind: 'project', icon: 'flask', note: '♪', builtin: true },
+  { id: 'project', name: '科研课题', kind: 'project', icon: 'flask', note: '♪', builtin: true },
   { id: 'direction', name: '科研方向', kind: 'direction', icon: 'compass', note: '𝄞', builtin: true },
   { id: 'todo', name: '待办事项', kind: 'todo', icon: 'list-checks', note: '♬', builtin: true },
   { id: 'note', name: '心得笔记', kind: 'generic', icon: 'notebook', note: '𝅘𝅥', builtin: true },

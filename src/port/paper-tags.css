@@ -1,0 +1,21 @@
+.modal-container:not(.embedded-library) > .modal.rw-tags-modal { width: 500px; }
+.rw-tag-editor { font: var(--ui-font); }
+.rw-tag-input-row { display: flex; align-items: center; gap: 8px; }
+.rw-tag-input-row input { flex: 1; min-width: 0; height: var(--ui-control-height); padding: 5px 9px; }
+.rw-tag-input-row > button { flex-shrink: 0; }
+.rw-editable-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.rw-editable-tags .rw-editable-tag { display: inline-flex; align-items: center; max-width: 100%; gap: 4px; padding: 2px 4px 2px 7px; }
+.rw-editable-tag > span, .rw-tag-apply > span { overflow: hidden; text-overflow: ellipsis; }
+.rw-editable-tag button { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 22px; height: 22px; padding: 0; border: 0; border-radius: 4px; color: inherit; background: transparent; font: inherit; }
+.rw-editable-tag button:hover { background: #0000000c; }
+.rw-editable-tag .rw-tag-apply { flex-shrink: 1; min-width: 0; width: auto; gap: 6px; text-align: left; }
+.rw-tag-apply small { flex-shrink: 0; font: var(--ui-font-caption); opacity: .8; }
+.rw-tag-editor-values { margin: 14px 0 20px; }
+.rw-tag-suggestions > span { display: block; margin-bottom: 8px; color: var(--muted); font: var(--ui-font-small); }
+.rw-tag-suggestions > div { display: flex; flex-wrap: wrap; gap: 6px; }
+.rw-tag-suggestions button { display: inline-flex; align-items: center; gap: 4px; min-height: 26px; border: 0; padding-inline: 7px; }
+.rw-tags-error { color: var(--red); font: var(--ui-font-small); }
+.rw-tag-editor .rw-edit-actions { margin-top: 24px; }
+.rw-paper-tags .rw-section-heading { margin-bottom: 10px; }
+.rw-paper-tags .rw-section-heading > button { margin-block: -4px; }
+@media (max-width: 600px) { .rw-tags-modal .rw-editable-tag button { min-height: 26px; } }

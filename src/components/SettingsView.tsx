@@ -169,7 +169,7 @@ function DataManager() {
   return (
     <div className="card settings-section">
       <h3>数据管理</h3>
-      <p className="desc">全部数据保存在本机浏览器存储中，无需账号与网络。换机或重装前请先导出备份。</p>
+      <p className="desc">数据保存在当前设备，无需账号与网络。此处 JSON 备份包含课题、点子、实验、数据索引、待办与通用记录，不包含文献库条目、PDF 和附加文件；文献库独立保存在本地，可通过「打开 PDF → 下载 PDF」另存原文。</p>
       <div className="data-actions">
         <button className="btn btn-ghost" onClick={onExport}>
           <Download size={15} />
@@ -182,7 +182,7 @@ function DataManager() {
         <button
           className="btn btn-ghost btn-danger"
           onClick={() =>
-            window.confirm('将清空当前全部数据并恢复示例数据，确定？') && resetSample()
+            window.confirm('将清空课题、待办与通用记录并恢复示例数据，文献库不受影响，确定？') && resetSample()
           }
         >
           <RotateCcw size={15} />

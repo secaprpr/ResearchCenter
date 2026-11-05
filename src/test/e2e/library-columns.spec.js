@@ -1,0 +1,74 @@
+import { test, expect } from '@playwright/test';
+import { pdfFixture } from './pdfFixture';
+
+test('文献列宽可拖动并记忆，右键选择列且保持行、附件和手机布局对齐', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/');
+  await page.getByRole('button', { name: '文献库', exact: true }).click();
+  const ui = page.frameLocator('.port-library-shell iframe');
+  await expect(ui.locator('#port-status')).toContainText('文献库已就绪');
+  await ui.locator('#port-pdf-input').setInputFiles([{ name: 'Column Layout Study.pdf', mimeType: 'application/pdf', buffer: pdfFixture('Column interaction study') }]);
+  await expect(ui.locator('.rw-paper-row')).toHaveCount(1);
+  const dragColumn = async (label, delta) => {
+    const handle = ui.getByRole('separator', { name: `调整${label}列宽`, exact: true });
+    await handle.scrollIntoViewIfNeeded();
+    const box = await handle.boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 + delta, box.y + box.height / 2, { steps: 8 });
+    await page.mouse.up();
+  };
+  await dragColumn('标题', 160);
+  await expect(ui.getByRole('separator', { name: '调整标题列宽', exact: true })).toHaveAttribute('aria-valuenow', '640');
+  await expect(ui.locator('th.rw-title-cell')).toHaveAttribute('aria-sort', 'none');
+  expect(await ui.locator('th.rw-title-cell').evaluate(el => Math.round(el.getBoundingClientRect().width))).toBe(640);
+  // The last column can grow beyond the viewport; captured pointer input still completes.
+  await dragColumn('标签', 190);
+  await expect(ui.getByRole('separator', { name: '调整标签列宽', exact: true })).toHaveAttribute('aria-valuenow', '470');
+  await ui.locator('th.rw-tags-cell').click({ button: 'right' });
+  const menu = ui.getByRole('menu', { name: '文献显示列', exact: true });
+  await expect(menu).toBeVisible();
+  await expect(menu.getByRole('menuitemcheckbox', { name: '标题 固定', exact: true })).toBeDisabled();
+  await menu.getByRole('menuitemcheckbox', { name: '出版物', exact: true }).click();
+  await menu.getByRole('menuitemcheckbox', { name: '创建者', exact: true }).click();
+  await expect(ui.locator('th.rw-venue-cell, .rw-paper-row > .rw-venue-cell, th.rw-author-cell, .rw-paper-row > .rw-author-cell')).toHaveCount(0);
+  await menu.getByRole('menuitemcheckbox', { name: '标签', exact: true }).click();
+  await expect(ui.locator('th.rw-tags-cell')).toHaveCount(0);
+  await menu.getByRole('menuitemcheckbox', { name: '标签', exact: true }).click();
+  await expect(ui.getByRole('separator', { name: '调整标签列宽', exact: true })).toHaveAttribute('aria-valuenow', '470');
+  // Menu stays inside the iframe even when opened at the right edge.
+  const frame = page.frames().find(frame => frame.url().includes('port.html'));
+  expect(await frame.evaluate(() => { const r = document.querySelector('.rw-column-menu').getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth && r.bottom <= innerHeight; })).toBe(true);
+  await menu.press('Escape');
+  await expect(menu).toHaveCount(0);
+  await ui.getByRole('button', { name: '展开附件：Column Layout Study', exact: true }).click();
+  await expect(ui.locator('.rw-attachment-row td[colspan]')).toHaveAttribute('colspan', '7');
+  await page.reload();
+  await page.getByRole('button', { name: '文献库', exact: true }).click();
+  await expect(ui.getByRole('separator', { name: '调整标题列宽', exact: true })).toHaveAttribute('aria-valuenow', '640');
+  await expect(ui.getByRole('separator', { name: '调整标签列宽', exact: true })).toHaveAttribute('aria-valuenow', '470');
+  await expect(ui.locator('th.rw-venue-cell, th.rw-author-cell')).toHaveCount(0);
+  // Pixel column widths never widen the mobile document.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(ui.locator('.rw-paper-row')).toBeVisible();
+  expect(await ui.locator('html').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+  await ui.getByRole('button', { name: '选择显示列', exact: true }).click();
+  await expect(menu.getByRole('menuitemcheckbox', { name: '出版物', exact: true })).toHaveAttribute('aria-checked', 'false');
+  await menu.getByRole('menuitem', { name: '恢复默认列布局', exact: true }).click();
+  await expect(menu).toHaveCount(0);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await expect(ui.locator('th.rw-venue-cell')).toHaveCount(1);
+  await expect(ui.getByRole('separator', { name: '调整标题列宽', exact: true })).toHaveAttribute('aria-valuenow', '480');
+  const titleHandle = ui.getByRole('separator', { name: '调整标题列宽', exact: true });
+  await titleHandle.focus(); await titleHandle.press('Shift+ArrowRight');
+  await expect(titleHandle).toHaveAttribute('aria-valuenow', '520');
+  await titleHandle.dblclick();
+  await expect(titleHandle).toHaveAttribute('aria-valuenow', '480');
+  await expect(ui.locator('th.rw-title-cell')).toHaveAttribute('aria-sort', 'none');
+  await ui.getByRole('button', { name: '按标题排序', exact: true }).click();
+  await expect(ui.locator('th.rw-title-cell')).toHaveAttribute('aria-sort', 'ascending');
+  await ui.getByRole('button', { name: '选择显示列', exact: true }).click();
+  await page.screenshot({ path: 'shots/library-column-menu-test.png' });
+  expect(errors).toEqual([]);
+});

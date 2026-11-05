@@ -1,0 +1,30 @@
+[
+  {
+    "name": "library",
+    "manifest": {
+      "id": "research-library",
+      "name": "Research Library",
+      "version": "0.10.0",
+      "minAppVersion": "1.5.0",
+      "description": "A Markdown-backed CS research paper manager with visual figure thumbnails, Paper Detail figure hero, gallery view, Maintenance, BibTeX, and PDF-first import.",
+      "author": "Local Research Workflow",
+      "isDesktopOnly": false
+    },
+    "sha256": "dcdc24642d856560694439a9fd0450afce6da749121b0055e1a083e3b31a03a4",
+    "changes": "CommonJS Obsidian import and module export adapted to the local compatibility host; original algorithms retained."
+  },
+  {
+    "name": "reader",
+    "manifest": {
+      "id": "mupdf-reader-mvp",
+      "name": "MuPDF Reader MVP",
+      "version": "0.10.4",
+      "minAppVersion": "1.6.0",
+      "description": "MuPDF research reader with per-PDF internal storage, high-resolution Region previews in the research sidebar, annotations/tags, spatial notes, translation, outline/search, Markdown references, and reading-position restore.",
+      "author": "Local Prototype",
+      "isDesktopOnly": true
+    },
+    "sha256": "27bb9314503a31b587d78a218802c0c9fc79dd477a4c9b8353fd8f72b396fd38",
+    "changes": "CommonJS Obsidian import/export adapted to the local compatibility host. Workbench translation patches add current-selection entry, paused/manual preview, in-panel language/provider selection, cancellable/timeout-aware requests, retry, cache retention, text cleanup and viewport bounds. PDF rendering, annotation coordinates and the MuPDF runtime remain unchanged."
+  }
+]

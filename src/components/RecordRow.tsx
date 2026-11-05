@@ -1,3 +1,4 @@
+import { useRecordContextMenu } from './useRecordContextMenu';
 import { Star, Pencil, Copy, Archive, ArchiveRestore, Trash2 } from 'lucide-react';
 import clsx from 'clsx';
 import type { DragEvent } from 'react';
@@ -40,6 +41,7 @@ export function StarButton({ record }: { record: RecordItem }) {
 export function RecordRow({ record, dnd }: { record: RecordItem; dnd?: RowDnd }) {
   const { types, workspaces, archiveRecord, duplicateRecord, deleteRecord } = useStore();
   const type = types.find((t) => t.id === record.typeId);
+  const context = useRecordContextMenu(record);
   const ws = workspaces.find((w) => w.id === record.workspaceId);
 
   const onDelete = () => {
@@ -48,8 +50,10 @@ export function RecordRow({ record, dnd }: { record: RecordItem; dnd?: RowDnd })
     }
   };
 
-  return (
+  return (<>
     <div
+      {...context.handlers}
+      tabIndex={-1}
       className={clsx('card record-row', record.archived && 'archived', dnd?.className)}
       draggable={!!dnd}
       onDragStart={dnd?.onDragStart}
@@ -106,6 +110,6 @@ export function RecordRow({ record, dnd }: { record: RecordItem; dnd?: RowDnd })
           <Trash2 size={15} />
         </button>
       </div>
-    </div>
+    </div>{context.menu}</>
   );
 }

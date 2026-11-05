@@ -1,0 +1,23 @@
+/* Reading size and chrome size are intentionally independent. */
+.rt-workspace, body:has(.rt-workspace) :is(.modal,.workbench-context-menu) {
+ --ui-size:14px; --ui-size-small:12px; --ui-size-caption:12px; --ui-size-prose:var(--rt-font-size,15px);
+ --ui-font:400 14px/1.55 var(--font-sans); --ui-font-small:400 12px/1.55 var(--font-sans); --ui-font-caption:400 12px/1.5 var(--font-sans);
+ --ui-font-prose:400 var(--rt-font-size,15px)/1.75 var(--font-sans); --ui-font-section:600 14px/1.55 var(--font-sans);
+ --rt-control-height:32px; --rt-row-height:calc(12px + var(--rt-font-size,15px)*2); --rt-event-height:calc(8px + var(--rt-font-size,15px)*2);
+ font:var(--ui-font);
+}
+.rt-font-control { display:inline-flex; align-items:center; gap:7px; height:30px; color:var(--muted); font:var(--ui-font-small); white-space:nowrap; }
+.rt-font-control select { width:58px; height:30px; padding:0 5px; border:1px solid var(--line); border-radius:5px; background:var(--surface); color:var(--ink); font:var(--ui-font); }
+.rt-workspace .rtl-heading { height:calc(var(--rt-row-height) - 14px); }
+.rt-workspace .rtl-row > .rtl-date { height:var(--rt-row-height); }
+.rt-workspace .rtl-title { min-height:calc(var(--rt-row-height) - 14px); font-size:var(--rt-font-size,15px); }
+.rt-workspace .rtl-node-hit { top:calc(var(--rt-font-size,15px) - 6px); }
+.rt-workspace .rtl-row:is(.style-milestone,.style-snapshot) .rtl-title > .rtl-title-text { font:600 var(--rt-font-size,15px)/1.55 var(--font-sans); }
+.rt-workspace .rt-task-title { font-size:var(--rt-font-size,15px); }
+.rt-workspace .rtl-detail .rtl-summary,.rt-workspace .rtl-event-toggle,.rt-workspace .rt-event-description { font-size:var(--rt-font-size,15px); }
+.rt-workspace .rt-form.rtl-editor .rtl-editor-line > input { height:calc(8px + var(--rt-font-size,15px)*2); font-size:var(--rt-font-size,15px); }
+.rt-workspace .rt-form.rtl-editor > textarea,.rt-workspace .rt-form.rtl-editor .rtl-followup-grid textarea { height:calc(12px + var(--rt-font-size,15px)*3); min-height:calc(12px + var(--rt-font-size,15px)*3); font-size:var(--rt-font-size,15px); }
+.rt-workspace .rtl-detail .rt-event { min-height:var(--rt-event-height); }
+.rt-workspace .rtl-detail .rtl-event-date { height:var(--rt-event-height); }
+body:has(.rt-workspace) .workbench-context-menu button { font-size:13px; min-height:32px; }
+@media(max-width:600px) { body:has(.rt-workspace) .workbench-context-menu button { min-height:40px; } }

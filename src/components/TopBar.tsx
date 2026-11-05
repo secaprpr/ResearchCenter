@@ -1,23 +1,29 @@
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Upload } from 'lucide-react';
 import { useStore } from '../store';
 import { requestEditor } from '../editorBus';
+import { LIBRARY_IMPORT_EVENT, useLibraryStore } from '../library/store';
 
 export function TopBar() {
   const { search, setSearch, workspaces, workspaceFilter, setWorkspaceFilter, view, types } = useStore();
+  const library = useLibraryStore();
+  const isLibrary = view === 'library-basic';
 
   const currentType = types.find((t) => t.id === view);
+
+  if (view === 'library' || currentType?.kind === 'project' || currentType?.kind === 'todo') return null;
 
   return (
     <div className="topbar">
       <div className="search-box">
         <Search size={15} color="#a8a294" />
         <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="搜索标题、正文、自定义字段…"
+          value={isLibrary ? library.query : search}
+          onChange={(e) => isLibrary ? useLibraryStore.setState({ query: e.target.value }) : setSearch(e.target.value)}
+          aria-label={isLibrary ? '搜索文献' : '搜索记录'}
+          placeholder={isLibrary ? '搜索标题、作者、标签或备注…' : '搜索标题、正文、自定义字段…'}
         />
       </div>
-      <select
+      {!isLibrary && <select
         className="workspace-select"
         value={workspaceFilter}
         onChange={(e) => setWorkspaceFilter(e.target.value)}
@@ -29,9 +35,10 @@ export function TopBar() {
             {w.name}
           </option>
         ))}
-      </select>
+      </select>}
       <div className="topbar-spacer" />
-      {view !== 'settings' && (
+      {isLibrary ? <button className="btn btn-primary" disabled={library.importing || library.loading || !!library.error}
+        onClick={() => window.dispatchEvent(new Event(LIBRARY_IMPORT_EVENT))}><Upload size={15} />{library.importing ? '正在导入…' : '导入 PDF'}</button> : view !== 'settings' && (
         <button
           className="btn btn-primary"
           onClick={() => requestEditor(currentType ? { typeId: currentType.id } : {})}

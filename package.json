@@ -6,15 +6,15 @@
   "main": "electron/main.cjs",
   "description": "Local-first Windows desktop workbench for research projects, tasks, schedules, and notes.",
   "author": "Layman-art",
-  "license": "MIT",
+  "license": "AGPL-3.0-or-later",
   "copyright": "Copyright © 2026 Layman-art",
-  "homepage": "https://github.com/Layman-art/Research-Workbench#readme",
+  "homepage": "https://github.com/secaprpr/ResearchCenter#readme",
   "bugs": {
-    "url": "https://github.com/Layman-art/Research-Workbench/issues"
+    "url": "https://github.com/secaprpr/ResearchCenter/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Layman-art/Research-Workbench.git"
+    "url": "git+https://github.com/secaprpr/ResearchCenter.git"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
@@ -25,9 +25,16 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "audit:research-ui": "node --experimental-strip-types scripts/audit-research-ui.mjs",
+    "audit:topics-ui": "node --experimental-strip-types scripts/audit-topics.mjs",
     "dev:electron": "concurrently -k \"npm:dev\" \"wait-on tcp:1430 && cross-env ELECTRON_START_URL=http://localhost:1430 electron .\"",
     "dist": "npm run build && electron-builder",
-    "dist:portable": "npm run build && electron-builder --win portable"
+    "dist:portable": "npm run build && electron-builder --win portable",
+    "start:research": "node scripts/start-research.cjs",
+    "dev:research": "node scripts/start-research.cjs --dev",
+    "audit:tasks-ui": "node --experimental-strip-types scripts/audit-research-tasks.mjs",
+    "audit:lineage-ui": "node --experimental-strip-types scripts/audit-research-lineage.mjs",
+    "cli": "node electron/research-cli.cjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
@@ -64,17 +71,46 @@
   "build": {
     "appId": "com.researchworkbench.app",
     "productName": "Research Workbench",
-    "directories": { "output": "release" },
-    "files": ["dist", "electron", "package.json"],
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist",
+      "electron",
+      "package.json"
+    ],
     "extraResources": [
-      { "from": "build/icon.ico", "to": "icon.ico" },
-      { "from": "LICENSE", "to": "LICENSE" },
-      { "from": "PRIVACY.md", "to": "PRIVACY.md" },
-      { "from": "THIRD_PARTY_NOTICES.md", "to": "THIRD_PARTY_NOTICES.md" },
-      { "from": "licenses", "to": "licenses" }
+      {
+        "from": "electron",
+        "to": "cli",
+        "filter": ["research-cli.cjs", "research-cli-schema.json"]
+      },
+      {
+        "from": "build/icon.ico",
+        "to": "icon.ico"
+      },
+      {
+        "from": "LICENSE",
+        "to": "LICENSE"
+      },
+      {
+        "from": "PRIVACY.md",
+        "to": "PRIVACY.md"
+      },
+      {
+        "from": "THIRD_PARTY_NOTICES.md",
+        "to": "THIRD_PARTY_NOTICES.md"
+      },
+      {
+        "from": "licenses",
+        "to": "licenses"
+      }
     ],
     "win": {
-      "target": ["nsis", "portable"],
+      "target": [
+        "nsis",
+        "portable"
+      ],
       "icon": "build/icon.ico"
     },
     "nsis": {
@@ -87,5 +123,14 @@
     "portable": {
       "artifactName": "Research-Workbench-Portable-release-x64.${ext}"
     }
+  },
+  "dependencies": {
+    "dompurify": "^3.4.17",
+    "lucide": "^1.60.0",
+    "marked": "^18.1.1",
+    "motion": "^14.8.0",
+    "pdfjs-dist": "^6.4.299",
+    "vditor": "^4.0.1",
+    "yaml": "^2.9.1"
   }
 }

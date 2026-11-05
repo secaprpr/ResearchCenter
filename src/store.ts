@@ -5,6 +5,12 @@ import { pickNote } from './types';
 import { BUILTIN_TYPES, BUILTIN_WORKSPACES, buildSampleRecords, ensureScheduleType, mergeProjectTypes } from './sample';
 import { orderKey } from './planUtils';
 import { isTypeIcon } from './icons';
+import { isTopicData } from './topics';
+import { cloneLineageTasks } from './task-lineage';
+import { defaultCategories, defaultTemplates, isTaskCategories, isTaskTemplates, type TaskCategory, type TaskTemplate } from './research-tasks';
+import type { CliReceipt } from './research-cli-types';
+import { applyTodayData, isTodayData, projectTodayData, type TodayData } from './today-data';
+import { toggleTodayTask } from './today-repeat';
 
 export const uid = (): string =>
   typeof crypto !== 'undefined' && 'randomUUID' in crypto
@@ -14,6 +20,11 @@ export const uid = (): string =>
 export type View = 'dashboard' | 'settings' | string;
 
 interface WorkbenchState {
+  todayData: Record<string, TodayData>;
+  cliReceipts: CliReceipt[];
+  taskCategories: TaskCategory[];
+  taskTemplates: TaskTemplate[];
+  setTaskCatalog: (categories: TaskCategory[], templates: TaskTemplate[]) => void;
   // 数据
   records: RecordItem[];
   types: TypeDef[];
@@ -116,6 +127,8 @@ function isRecord(v: unknown): v is RecordItem {
     isNullableTime(v.planStart) &&
     isNullableTime(v.planEnd) &&
     (v.sub === undefined || v.sub === null || v.sub === 'vertical' || v.sub === 'horizontal') &&
+    (v.topic === undefined || isTopicData(v.topic)) &&
+    (v.topicId === undefined || typeof v.topicId === 'string') &&
     typeof v.createdAt === 'number' &&
     Number.isFinite(v.createdAt) &&
     typeof v.updatedAt === 'number' &&
@@ -153,6 +166,11 @@ function hasUniqueIds(items: Array<{ id: string }>): boolean {
 export const useStore = create<WorkbenchState>()(
   persist(
     (set, get) => ({
+      todayData: {},
+      cliReceipts: [],
+      taskCategories: defaultCategories(),
+      taskTemplates: defaultTemplates(),
+      setTaskCatalog: (taskCategories, taskTemplates) => set({ taskCategories, taskTemplates }),
       records: buildSampleRecords(),
       types: [...BUILTIN_TYPES],
       workspaces: [...BUILTIN_WORKSPACES],
@@ -200,6 +218,7 @@ export const useStore = create<WorkbenchState>()(
           id: uid(),
           title: `${src.title}（副本）`,
           fields: src.fields.map((f) => ({ ...f, id: uid() })),
+          ...(src.topic ? { topic: { ...structuredClone(src.topic), ...(src.topic.tasks ? { tasks: cloneLineageTasks(src.topic.tasks, uid) } : {}) } } : {}),
           done: false,
           createdAt: now,
           updatedAt: now,
@@ -209,7 +228,7 @@ export const useStore = create<WorkbenchState>()(
 
       archiveRecord: (id, archived) => get().updateRecord(id, { archived }),
 
-      deleteRecord: (id) => set((s) => ({ records: s.records.filter((r) => r.id !== id) })),
+      deleteRecord: (id) => set((s) => ({ records: s.records.filter((r) => r.id !== id).map(r => r.topicId === id ? { ...r, topicId: undefined } : r) })),
 
       clearDone: (typeId) =>
         set((s) => ({
@@ -222,8 +241,15 @@ export const useStore = create<WorkbenchState>()(
       },
 
       toggleDone: (id) => {
-        const r = get().records.find((x) => x.id === id);
-        if (r) get().updateRecord(id, { done: !r.done });
+        const state = get(), r = state.records.find((x) => x.id === id);
+        if (r && !r.archived && state.types.some(type => type.id === r.typeId && type.kind === 'todo') && state.todayData[r.typeId]) {
+          const baseline = projectTodayData(state.records, r.typeId, state.todayData[r.typeId]);
+          const data = toggleTodayTask(baseline, id, Date.now(), uid);
+          const result = applyTodayData(state.records, r.typeId, data, baseline, r.workspaceId, baseline);
+          set({ records: result.records, todayData: { ...state.todayData, [r.typeId]: result.data } });
+          return;
+        }
+        if (r) get().updateRecord(id, { done: !r.done, completedAt: r.done ? null : Date.now() });
       },
 
       addType: (name, kind = 'generic') => {
@@ -255,7 +281,7 @@ export const useStore = create<WorkbenchState>()(
         if (!t) return;
         set((s) => ({
           types: s.types.filter((x) => x.id !== id),
-          records: s.records.filter((r) => r.typeId !== id),
+          records: s.records.filter((r) => r.typeId !== id).map(r => r.topicId && s.records.some(topic => topic.id === r.topicId && topic.typeId === id) ? { ...r, topicId: undefined } : r),
           view: s.view === id ? 'dashboard' : s.view,
         }));
       },
@@ -326,9 +352,12 @@ export const useStore = create<WorkbenchState>()(
       setDisplayName: (displayName) => set({ displayName: displayName.trim() }),
 
       exportData: () => ({
+        todayData: get().todayData,
         app: 'research-workbench',
         version: 1,
         exportedAt: new Date().toISOString(),
+        taskCategories: get().taskCategories,
+        taskTemplates: get().taskTemplates,
         records: get().records,
         types: get().types,
         workspaces: get().workspaces,
@@ -339,6 +368,10 @@ export const useStore = create<WorkbenchState>()(
           return { ok: false, error: '文件内容不是有效的 JSON 对象' };
         }
         const p = payload as Partial<ExportPayload>;
+        if (p.todayData !== undefined && (!isObject(p.todayData) || !Object.values(p.todayData).every(isTodayData))) {
+          return { ok: false, error: '任务中心数据格式不正确' };
+        }
+        if ((p.taskCategories !== undefined && !isTaskCategories(p.taskCategories)) || (p.taskTemplates !== undefined && !isTaskTemplates(p.taskTemplates))) return { ok: false, error: '任务标签或模板格式不正确' };
         if (p.app !== 'research-workbench' || p.version !== 1) {
           return { ok: false, error: '这不是受支持的 Research Workbench 备份' };
         }
@@ -363,8 +396,12 @@ export const useStore = create<WorkbenchState>()(
           return { ok: false, error: '记录引用了不存在的类型或工作区' };
         }
         set({
+          todayData: p.todayData ?? {},
+          cliReceipts: [],
+          taskCategories: p.taskCategories ?? defaultCategories(),
+          taskTemplates: p.taskTemplates ?? defaultTemplates(),
           records: p.records,
-          types: p.types.map((t) => ({ ...t, note: t.note ?? pickNote(t.id, []) })),
+          types: p.types.map((t) => ({ ...t, name: t.id === 'project' && t.name === '科研项目' ? '科研课题' : t.name, note: t.note ?? pickNote(t.id, []) })),
           workspaces: p.workspaces,
           view: 'dashboard',
           workspaceFilter: 'all',
@@ -376,6 +413,10 @@ export const useStore = create<WorkbenchState>()(
 
       resetSample: () =>
         set({
+          todayData: {},
+          cliReceipts: [],
+          taskCategories: defaultCategories(),
+          taskTemplates: defaultTemplates(),
           records: buildSampleRecords(),
           types: [...BUILTIN_TYPES],
           workspaces: [...BUILTIN_WORKSPACES],
@@ -389,14 +430,21 @@ export const useStore = create<WorkbenchState>()(
       name: 'research-workbench-v1',
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({
+        todayData: s.todayData,
+        cliReceipts: s.cliReceipts,
+        taskCategories: s.taskCategories,
+        taskTemplates: s.taskTemplates,
         records: s.records,
         types: s.types,
         workspaces: s.workspaces,
         displayName: s.displayName,
       }),
-      version: 6,
+      version: 9,
       migrate: (persisted) => {
-        const state = persisted as { records: RecordItem[]; types: TypeDef[]; workspaces: Workspace[] };
+        const state = persisted as { records: RecordItem[]; types: TypeDef[]; workspaces: Workspace[]; taskCategories?: TaskCategory[]; taskTemplates?: TaskTemplate[]; todayData?: Record<string, TodayData> };
+        state.todayData ??= {};
+        state.taskCategories ??= defaultCategories();
+        state.taskTemplates ??= defaultTemplates();
         // v1/v2 → v3：类型补充 / 刷新装饰音符（内置类型使用最新符号）
         state.types = (state.types ?? []).map((t, i) => {
           const builtin = BUILTIN_TYPES.find((b) => b.id === t.id);
@@ -414,7 +462,7 @@ export const useStore = create<WorkbenchState>()(
         );
         // v5 → v6：纵向 / 横向项目合并为「科研项目」，记录用 sub 保留细分
         const merged = mergeProjectTypes(state.types, state.records);
-        state.types = merged.types;
+        state.types = merged.types.map(t => t.id === 'project' && t.name === '科研项目' ? { ...t, name: '科研课题' } : t);
         state.records = merged.records;
         return state;
       },

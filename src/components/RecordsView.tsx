@@ -1,3 +1,4 @@
+import { useRecordContextMenu } from './useRecordContextMenu';
 import { useMemo, useState, Fragment } from 'react';
 import type { DragEvent } from 'react';
 import clsx from 'clsx';
@@ -27,6 +28,7 @@ function DirectionCard({ record, dnd }: { record: RecordItem; dnd: RowDnd }) {
   const { workspaces, archiveRecord, duplicateRecord, deleteRecord, updateRecord } = useStore();
   const ws = workspaces.find((w) => w.id === record.workspaceId);
   const isMain = record.priority === 'high';
+  const context = useRecordContextMenu(record);
 
   const onDelete = () => {
     if (window.confirm(`确定删除「${record.title}」吗？此操作不可恢复。`)) {
@@ -34,8 +36,10 @@ function DirectionCard({ record, dnd }: { record: RecordItem; dnd: RowDnd }) {
     }
   };
 
-  return (
+  return (<>
     <div
+      {...context.handlers}
+      tabIndex={-1}
       className={clsx('card record-card', dnd.className)}
       draggable
       onDragStart={dnd.onDragStart}
@@ -100,7 +104,7 @@ function DirectionCard({ record, dnd }: { record: RecordItem; dnd: RowDnd }) {
         {ws && <span>{ws.name}</span>}
         <span style={{ marginLeft: 'auto' }}>更新于 {formatDate(record.updatedAt)}</span>
       </div>
-    </div>
+    </div>{context.menu}</>
   );
 }
 
@@ -125,15 +129,15 @@ export function RecordsView({ typeId }: { typeId: string }) {
   const [dragId, setDragId] = useState<string | null>(null);
   const [over, setOver] = useState<{ id: string; after: boolean } | null>(null);
 
-  // 科研项目：按纵向 / 横向细分分组（组内保持手动排序）
+  // 科研课题：按纵向 / 横向细分分组（组内保持手动排序）
   const subGroups = useMemo(() => {
     if (type?.kind !== 'project') return [];
     const vertical = sorted.filter((r) => r.sub === 'vertical');
     const horizontal = sorted.filter((r) => r.sub === 'horizontal');
     const other = sorted.filter((r) => r.sub !== 'vertical' && r.sub !== 'horizontal');
     return [
-      { key: 'vertical', label: '纵向项目', items: vertical },
-      { key: 'horizontal', label: '横向项目', items: horizontal },
+      { key: 'vertical', label: '纵向课题', items: vertical },
+      { key: 'horizontal', label: '横向课题', items: horizontal },
       { key: 'other', label: '未分类', items: other },
     ].filter((g) => g.items.length > 0);
   }, [type?.kind, sorted]);

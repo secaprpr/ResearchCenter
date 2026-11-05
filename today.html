@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' data:; connect-src 'self' ws://127.0.0.1:1430 ws://localhost:1430; object-src 'none'; base-uri 'self'">
+<title>任务中心 · 科研工作台</title></head><body>
+<header class="today-host-toolbar" aria-label="任务数据与设置"><span id="today-status" role="status">正在连接任务中心…</span><div class="today-host-actions"><button id="today-host-back" type="button" hidden>返回任务</button><button id="today-host-navigation" type="button" aria-expanded="false" aria-controls="today-host-main" disabled>清单目录</button><button id="today-host-import" type="button" disabled>导入任务</button><button id="today-host-export" type="button" disabled>导出任务</button><button id="today-host-settings" type="button" disabled>任务设置</button><button id="today-host-retry" type="button" hidden>重试</button></div></header>
+<main id="today-host-main" aria-label="任务中心"></main><aside id="today-host-sidebar" hidden></aside>
+<div id="notices" aria-live="polite"></div><input id="today-host-input" type="file" accept=".json,application/json" hidden>
+<script type="module" src="/src/today/main.js"></script></body></html>

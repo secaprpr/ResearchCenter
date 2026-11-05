@@ -1,0 +1,87 @@
+{
+  "protocol": "research-workbench.cli.v1",
+  "usage": "node research-cli.cjs <resource> <operation> [id] [--topic ID] [--node ID] [--file JSON_FILE|-] [--data JSON] [--request-id ID] [--dry-run] [--expect-updated-at NUMBER]",
+  "commands": {
+    "status": "检查已启动工作台的连接",
+    "schema": "读取本机 CLI 格式，无需运行工作台",
+    "catalog": "读取工作区、标签和字段模板",
+    "topics list": "列出课题；可用 --search、--workspace、--archived",
+    "topics get TOPIC_ID": "读取课题与完整内容",
+    "topics create --file FILE": "创建课题：title 必填；可指定 workspaceId、question、hypothesis、focus、nextStep、conclusion、blocker、content",
+    "topics update TOPIC_ID --file FILE": "只合并明确提供的课题字段，不覆盖其他内容",
+    "nodes list --topic TOPIC_ID": "列出课题节点、ID、关系和更新时间",
+    "nodes get NODE_ID --topic TOPIC_ID": "读取节点，包括过程事件、来源、实际发生时间和补录时间",
+    "nodes create --topic TOPIC_ID --file FILE": "创建节点：title 必填；可指定 id、description、notes、content、categoryIds、status、createdAt、nodeType、nodeStyle、parentIds、branch、version、events；跟进字段：expectedOutput（预期产物）、nextStep（下一步）、blocker（受阻原因）、waitingFor（等待结果），空字符串表示清除",
+    "nodes update NODE_ID --topic TOPIC_ID --file FILE": "补齐节点：title、description、notes、content、categoryIds、createdAt、nodeType、nodeStyle、parentIds、branch、version；状态变化通过事件记录；跟进字段：expectedOutput（预期产物）、nextStep（下一步）、blocker（受阻原因）、waitingFor（等待结果），空字符串表示清除",
+    "events append --topic TOPIC_ID --node NODE_ID --file FILE": "追加单个事件，或传 {events:[...]}；title、occurredAt 必填；可填 description、evidence、status、templateId、templateVersion、templateSnapshot、fields",
+    "events update EVENT_ID --topic TOPIC_ID --node NODE_ID --file FILE": "修正已有事件；保留未提供字段、原始来源和 recordedAt；可补齐 title、description、occurredAt、evidence、status、fields、templateId、templateVersion、templateSnapshot",
+    "apply --file FILE": "直接提交原 research-workbench.task.v1 导入记录",
+    "request --file FILE": "底层命令对象，例如 {op: 'nodes.get', topicId: '...', nodeId: '...'}"
+  },
+  "rules": [
+    "工作台必须在本机运行；连接文件由桌面应用生成。默认只连接 127.0.0.1，不支持远端写入。",
+    "--file - 从标准输入读取 UTF-8 JSON；--data 接受 JSON 字符串。每条命令最大 1 MB。",
+    "写入前先读取准确课题/节点 ID，不要通过名称猜测归属。",
+    "occurredAt 必须是带时区的真实发生时间；无法核实填 null。evidence 填写日志或文件等依据，禁止用补录时间冒充完成时间。recordedAt 由软件生成。",
+    "使用模板时 fields 是字段 ID 到值的对象。自定义字段可写为 [{id,label,type,value}]，type 支持 text/number/url/path/date。",
+    "事件修正合并已知字段；数组形式可增加带名称和类型的自定义字段，未提到的字段保留。",
+    "请求超时后保留同一 --request-id 重试。最近 200 个成功写入请求会持久去重；相同 ID 不同内容会报冲突。",
+    "--dry-run 校验并预览结果，不写入。--expect-updated-at 使用上次读取的 updatedAt，检测并发修改。",
+    "界面正在编辑目标节点时会拒绝同一节点写入，避免覆盖未保存内容。",
+    "第一版不提供删除命令。所有结果均为 JSON，失败以非零退出码返回。",
+    "优先读取并延续已有节点；跟进字段不会改变生命周期状态。受阻解除后明确传 blocker: \"\"，等待结束后明确传 waitingFor: \"\"。",
+    "写入和 dry-run 返回 changes（最多 8 项）、changeCount、changesTruncated；只包含变更类型、ID 与字段名。相同 requestId 重试返回原回执与 replayed:true，不是再次新增。"
+  ],
+  "examples": {
+    "node": {
+      "title": "下载 TCGA-BRCA，用于探索跨中心泛化",
+      "description": "建立第一轮数据底座",
+      "categoryIds": [
+        "data",
+        "download"
+      ],
+      "nodeType": "数据下载",
+      "parentIds": [],
+      "branch": false,
+      "status": "running",
+      "createdAt": "2026-10-30T10:05:00+08:00",
+      "expectedOutput": "可验证的数据清单和下载日志",
+      "nextStep": "完成校验后整理临床信息",
+      "waitingFor": "",
+      "blocker": ""
+    },
+    "event": {
+      "title": "下载完成",
+      "occurredAt": "2026-10-30T15:42:00+08:00",
+      "evidence": "download.log 的完成时间",
+      "status": "completed",
+      "fields": [
+        {
+          "id": "location",
+          "label": "实际保存位置",
+          "type": "path",
+          "value": "/data/tcga/brca"
+        },
+        {
+          "id": "count",
+          "label": "文件数量",
+          "type": "number",
+          "value": "2418"
+        }
+      ]
+    },
+    "correction": {
+      "description": "补充核实后的完成信息",
+      "occurredAt": "2026-10-30T15:42:00+08:00",
+      "evidence": "download.log",
+      "fields": [
+        {
+          "id": "checksum",
+          "label": "完整性检查",
+          "type": "text",
+          "value": "通过"
+        }
+      ]
+    }
+  }
+}

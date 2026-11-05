@@ -212,14 +212,14 @@ export function EditorModal({ request, onClose }: { request: EditorRequest; onCl
         )}
         {kind === 'project' && (
           <div>
-            <label className="form-label">项目类别</label>
+            <label className="form-label">课题类别</label>
             <select
               className="form-select"
               value={sub}
               onChange={(e) => setSub(e.target.value as 'vertical' | 'horizontal')}
             >
-              <option value="vertical">纵向项目</option>
-              <option value="horizontal">横向项目</option>
+              <option value="vertical">纵向课题</option>
+              <option value="horizontal">横向课题</option>
             </select>
           </div>
         )}

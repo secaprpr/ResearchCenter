@@ -1,0 +1,50 @@
+@import '../fonts.css';
+@import '../theme-tokens.css';
+
+/* Low-specificity host defaults; components own size/density. No blanket
+   .rw-workbench button font rule: it overrides compact controls and portal peers. */
+body { font: var(--ui-font); -webkit-font-smoothing: antialiased; }
+:where(button, input, select, textarea) { font: inherit; letter-spacing: normal; }
+:where(button, input, select, textarea):focus-visible { outline: var(--ui-focus-ring); outline-offset: 2px; }
+
+.rw-primary, .rw-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 7px; height: var(--ui-control-height); padding: 0 11px; white-space: nowrap; font: var(--ui-font); font-weight: 500; border-radius: var(--ui-action-radius); }
+.rw-primary { background: var(--ink); border: 1px solid var(--ink); color: var(--paper); box-shadow: var(--shadow); }
+.rw-primary:hover { background: var(--ink-soft); color: var(--surface); }
+.rw-secondary { background: var(--surface); border: 1px solid var(--line); color: var(--ink-soft); box-shadow: var(--shadow); }
+.rw-secondary:hover { background: var(--paper-deep); }
+.rw-icon-button { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: var(--ui-control-height); height: var(--ui-control-height); padding: 0; border: 0; border-radius: var(--ui-control-radius); color: var(--muted); background: transparent; }
+.rw-icon-button:hover { color: var(--ink); background: var(--paper-deep); }
+.rw-icon-button > svg { width: var(--ui-icon-size); height: var(--ui-icon-size); }
+.rw-text-button { display: inline-flex; align-items: center; gap: 5px; padding: 2px 0; border: 0; color: var(--muted); background: transparent; font: var(--ui-font-small); }
+.rw-text-button:hover { background: transparent; color: var(--ink); text-decoration: underline; }
+:is(.rw-primary, .rw-secondary, .rw-icon-button, .rw-text-button):disabled { color: var(--muted); cursor: default; box-shadow: none; opacity: .6; }
+:is(.rw-primary, .rw-secondary):disabled { background: var(--paper-deep); border-color: var(--line); }
+:is(.rw-primary, .rw-secondary, .rw-icon-button, .rw-text-button):focus-visible { outline: var(--ui-focus-ring); outline-offset: 2px; }
+
+/* Host modals include the migrated PDF editor and settings, not only React forms. */
+.modal-title { font: var(--ui-font-dialog); padding-right: 26px; }
+.modal-close-button { display: inline-flex; align-items: center; justify-content: center; width: var(--ui-control-height); height: var(--ui-control-height); border-radius: var(--ui-control-radius); }
+.modal-close-button:hover { background: var(--paper-deep); }
+.modal-content { font: var(--ui-font); }
+.modal-content :where(h2, h3) { font: var(--ui-font-section); }
+.modal-content :where(input, select, textarea) { font-family: var(--font-sans); font-size: var(--ui-size); line-height: var(--ui-leading); border-radius: var(--ui-control-radius); }
+.modal-content :where(input:not([type=checkbox], [type=radio], [type=range]), select) { min-height: var(--ui-control-height); }
+.modal-content > button, .modal-content > form > button, .setting-item-control > button,
+.mupdf-comment-actions button, .mupdf-comment-tag-input-row button { min-height: var(--ui-control-height); padding: 0 12px; border-radius: var(--ui-action-radius); font: var(--ui-font); font-weight: 500; }
+.modal-content .mod-cta { background: var(--ink); border-color: var(--ink); color: var(--paper); box-shadow: var(--shadow); }
+.modal-content .mod-cta:hover { background: var(--ink-soft); }
+.modal-content .mod-cta:disabled { background: var(--paper-deep); border-color: var(--line); color: var(--muted); cursor: default; box-shadow: none; }
+.setting-item-name { font: var(--ui-font); }
+.setting-item-description { font: var(--ui-font-small); }
+.port-note-editor { font: var(--ui-font-prose); }
+
+/* Menu/popup shells share tokens even when portalled outside .rw-workbench. */
+body :is(.rw-column-menu, .rw-menu, .rw-status-menu, .workbench-context-menu, .menu, .rw-reader-activity-panel) { border-color: var(--line); border-radius: var(--ui-menu-radius); background: var(--surface); box-shadow: var(--shadow-lg); font: var(--ui-font); -webkit-font-smoothing: antialiased; }
+.rw-column-menu :where(button), .rw-menu :where(button), .workbench-context-menu :where(button), .menu :where(button) { min-height: var(--ui-menu-row-height); border-radius: 5px; font: inherit; }
+.menu-item { font: inherit; }
+:is(.rw-column-menu, .rw-menu, .workbench-context-menu, .menu) button:hover:not(:disabled) { background: var(--paper-deep); }
+.rw-reader-activity-heading h2 { font: 600 14px/var(--ui-leading) var(--font-sans); }
+@media (max-width: 600px) {
+  /* Keep the same type scale on phones; larger touch targets are independent. */
+  :is(.rw-column-menu, .rw-menu, .rw-status-menu, .workbench-context-menu, .menu) button { min-height: 40px; }
+}

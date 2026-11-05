@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' blob: 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' data:; connect-src 'self' blob: ws://127.0.0.1:1430 ws://localhost:1430 https://api.crossref.org https://api.openalex.org https://api.semanticscholar.org https://dblp.org https://export.arxiv.org https://translate.googleapis.com https://api.deepl.com https://api-free.deepl.com; object-src 'none'; base-uri 'self'">
+<title>文献与 MuPDF 工作台</title></head><body>
+<header id="port-header" hidden><div id="port-actions"><button id="migration-button">迁移 Obsidian 数据</button><button id="settings-button">阅读与外观设置</button><button id="pdf-button" class="mod-cta">导入 PDF</button></div></header>
+<div id="port-status" role="status" class="rw-live-status">正在加载文献工作台…</div>
+<div id="library-root"></div>
+<div id="engine-library-root" hidden></div>
+<section id="reader-workspace" hidden role="main" aria-label="PDF 阅读工作区"><header class="port-reader-bar"><button id="reader-back">← 返回文献库</button><div class="port-reader-document"><span class="port-reader-eyebrow">文献库 / PDF 阅读</span><h1 id="reader-file-name"></h1></div><div class="port-reader-reading-state" hidden><span id="reader-reading-status"></span></div></header><div class="port-reader-body"><div id="reader-main"></div><aside id="reader-sidebar" aria-label="PDF 批注面板" hidden></aside></div></section>
+<div id="notices" aria-live="polite"></div><input id="port-pdf-input" type="file" accept=".pdf,application/pdf" multiple hidden>
+<script type="module" src="/src/port/main.js"></script></body></html>

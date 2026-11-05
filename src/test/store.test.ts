@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useStore, selectFiltered, countForType } from '../store';
+import { projectTodayData } from '../today-data';
 import { ensureScheduleType, mergeProjectTypes } from '../sample';
 import type { TypeDef } from '../types';
 import { orderKey } from '../planUtils';
@@ -71,6 +72,29 @@ describe('research workbench store', () => {
     const r = useStore.getState().records.find((x) => x.id === rec.id)!;
     expect(r.starred).toBe(true);
     expect(r.done).toBe(true);
+  });
+
+  it('从总览完成重复待办也生成下一次，并随完整备份恢复任务中心数据', () => {
+    const state = useStore.getState(), now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const record = state.addRecord({ typeId: 'todo', title: '每日核查下载结果', dueDate: today, content: '- [x] 复核日志' });
+    const data = projectTodayData(useStore.getState().records, 'todo');
+    data.tasks.find(task => task.id === record.id)!.repeat = { type: 'daily' };
+    useStore.setState({ todayData: { todo: data } });
+    useStore.getState().toggleDone(record.id);
+    const current = useStore.getState(), completed = current.records.find(item => item.id === record.id)!;
+    expect(completed.done).toBe(true);
+    expect(completed.completedAt).toBeGreaterThan(0);
+    const next = current.records.find(item => item.title === record.title && item.id !== record.id)!;
+    expect(next.done).toBe(false); expect(next.dueDate! > today).toBe(true);
+    expect(next.content).toBe('- [ ] 复核日志');
+    expect(current.todayData.todo.tasks.find(task => task.id === next.id)?.repeatSeriesId).toBe(record.id);
+    const backup = current.exportData();
+    current.resetSample();
+    expect(useStore.getState().todayData).toEqual({});
+    expect(useStore.getState().importData(backup).ok).toBe(true);
+    expect(useStore.getState().todayData).toEqual(backup.todayData);
+    expect(useStore.getState().records.find(item => item.id === next.id)).toEqual(next);
   });
 
   it('清空已完成待办：未完成的保留，已归档的不受影响', () => {

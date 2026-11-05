@@ -1,6 +1,7 @@
-const { app, BrowserWindow, shell, ipcMain, Tray, Menu, nativeImage } = require('electron');
+const { app, BrowserWindow, shell, ipcMain, Tray, Menu, nativeImage, dialog } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
+const { pathToFileURL } = require('node:url');
 
 const DEV_URL = app.isPackaged ? undefined : process.env.ELECTRON_START_URL;
 
@@ -11,13 +12,20 @@ if (!gotLock) app.quit();
 let mainWin = null;
 let tray = null;
 let isQuitting = false;
+let loadedUiSignature = '';
+
+function uiSignature() {
+  if (DEV_URL) return '';
+  try { return fs.readFileSync(path.join(__dirname, '..', 'dist', 'index.html'), 'utf8'); }
+  catch { return ''; }
+}
 
 function isTrustedSender(event) {
   const senderUrl = event.senderFrame?.url || event.sender.getURL();
   try {
     const actual = new URL(senderUrl);
-    if (app.isPackaged) return actual.protocol === 'file:';
-    return Boolean(DEV_URL && actual.origin === new URL(DEV_URL).origin);
+    if (DEV_URL) return actual.origin === new URL(DEV_URL).origin;
+    return actual.href === pathToFileURL(path.join(__dirname, '..', 'dist', 'index.html')).href;
   } catch {
     return false;
   }
@@ -65,10 +73,20 @@ function trayIcon() {
 }
 
 function showMainWindow() {
+  if (!app.isReady()) {
+    app.whenReady().then(showMainWindow);
+    return;
+  }
   if (!mainWin) {
     createWindow();
     return;
   }
+  const signature = uiSignature();
+  if (signature && loadedUiSignature && signature !== loadedUiSignature) {
+    loadedUiSignature = signature;
+    mainWin.webContents.reloadIgnoringCache();
+  }
+  if (mainWin.isMinimized()) mainWin.restore();
   mainWin.show();
   mainWin.focus();
 }
@@ -79,6 +97,7 @@ function createTray() {
   tray.setContextMenu(
     Menu.buildFromTemplate([
       { label: '显示科研工作台', click: showMainWindow },
+      { label: '重新加载界面', click: () => { showMainWindow(); mainWin?.webContents.reloadIgnoringCache(); } },
       { type: 'separator' },
       {
         label: '退出',
@@ -90,9 +109,11 @@ function createTray() {
     ]),
   );
   tray.on('double-click', showMainWindow);
+  tray.on('click', showMainWindow);
 }
 
 function createWindow() {
+  loadedUiSignature = uiSignature();
   const win = new BrowserWindow({
     width: 1280,
     height: 820,
@@ -137,11 +158,16 @@ function createWindow() {
     callback(false);
   });
 
-  if (DEV_URL) {
-    win.loadURL(DEV_URL);
-  } else {
-    win.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
-  }
+  const loading = DEV_URL
+    ? win.loadURL(DEV_URL)
+    : win.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
+  loading.catch(error => {
+    if (win.isDestroyed() || isQuitting) return;
+    console.error('Unable to load Research Workbench:', error);
+    dialog.showErrorBox('科研工作台启动失败', DEV_URL
+      ? '开发服务无法连接。请使用项目中的“启动科研工作台.cmd”打开本地版本。'
+      : '本地界面无法加载。请在项目目录运行 npm run build 后重新启动。');
+  });
 }
 
 onTrusted('win:minimize', (e) => BrowserWindow.fromWebContents(e.sender)?.minimize());
@@ -164,7 +190,13 @@ handleTrusted('app:set-close-to-tray', (_e, enabled) => {
   return writeSettings({ closeToTray: Boolean(enabled) }).closeToTray;
 });
 
+require('./research-vault.cjs').registerResearchVault(app, handleTrusted);
+if (gotLock) require('./research-cli-server.cjs').registerResearchCli(app, handleTrusted, onTrusted, () => mainWin);
+
 app.whenReady().then(() => {
+  // A second launch has already asked the owning instance to show its window.
+  // Never create another window while this losing process is quitting.
+  if (!gotLock) return;
   createTray();
   createWindow();
   app.on('activate', () => {
